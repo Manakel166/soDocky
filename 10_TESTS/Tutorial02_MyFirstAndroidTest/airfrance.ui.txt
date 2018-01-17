@@ -1,0 +1,10 @@
+*** Variables ***
+${FlightNews_Screen}    xpath=//android.widget.TextView[@text='Flight status'][@resource-id='android:id/action_bar_title']
+${popup_update_application}    xpath=//android.widget.ImageView[@resource-id='com.airfrance.android.dinamoprd:id/new_application_dialog_icon']
+${Update_later_button}    xpath=//android.widget.Button[@resource-id='com.airfrance.android.dinamoprd:id/new_application_dialog_later_button']
+${SigninScreen}    xpath=//android.widget.ImageView[@resource-id='com.airfrance.android.dinamoprd:id/fb_icon_title']
+${Skip_SignIn_Button}    xpath=//android.widget.TextView[@resource-id='com.airfrance.android.dinamoprd:id/fb_text_back']
+${confirm_language_screen}    xpath=//android.widget.TextView[@resource-id='com.airfrance.android.dinamoprd:id/dialog_confirm_content']
+${confirm_current_language}    xpath=//android.widget.Button[@resource-id='com.airfrance.android.dinamoprd:id/dialog_confirm_yes_button']
+${HomePage_Screen}    xpath=//android.widget.TextView[@resource-id='com.airfrance.android.dinamoprd:id/home_text']
+${flight_news_tile}    xpath=//android.widget.TextView[@text='Flight status'][@resource-id='com.airfrance.android.dinamoprd:id/label']

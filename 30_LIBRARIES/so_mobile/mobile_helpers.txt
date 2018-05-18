@@ -1,0 +1,13 @@
+*** Settings ***
+Library           adb.py    # Driving the Adb from RF.
+Library           String
+Library           android_xpath_helpers.py    #helpers to make usage of xpath easier on Android
+Library           AppiumExtension.py    #addition keywords for usage on Appium
+
+*** Keywords ***
+Launch Application on Local Device
+    [Arguments]    &{an_app_under_test}
+    &{local_device}=    Get First Connected Device
+    &{languages}=    Get Device Language
+    Set Library Search Order    AppiumLibrary    Selenium2Library
+    Open Application    http://127.0.0.1:4442/wd/hub    &{local_device}    &{an_app_under_test}

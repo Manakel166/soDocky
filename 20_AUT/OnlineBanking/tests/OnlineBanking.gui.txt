@@ -1,0 +1,36 @@
+*** Settings ***
+Resource          OnlineBanking.application.txt
+
+*** Keywords ***
+Start Transaction
+    [Arguments]    ${transaction_name}
+    Log    Start of: ${transaction_name}
+
+Stop Transaction
+    [Arguments]    ${transaction_name}
+    Log    End of: ${transaction_name}
+
+a blocking error message must be displayed
+    [Arguments]    ${arg1}
+    On DepositPage, Check that Transfer is refused with Blocking Error Message    ${arg1}
+
+he Submits request for Fund Transfer
+    On DepositPage, Validate the Transfer request
+
+he enters as amount
+    [Arguments]    ${arg1}
+    On DepositPage, Enter the Transfer Amount    ${arg1}
+
+he enters as payee name
+    [Arguments]    ${arg1}
+    On DepositPage, Enter the Payee Name    ${arg1}
+
+the fund transfert must be completed
+    On DepositPage, Check that Transfer is completed
+
+the user is on Fund Transfer Page
+    Launch OnlineBanking on Browser:    Firefox
+    Start Transaction    Make Deposit
+    On LoginPage, Enter Valid Credentials    Manakel    robert
+    On Homepage, Choose to make a Deposit
+    Stop Transaction    Make Deposit

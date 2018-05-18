@@ -1,0 +1,1 @@
+java -jar selenium-server-standalone.jar -role hub -host "127.0.0.1" -port "4442"

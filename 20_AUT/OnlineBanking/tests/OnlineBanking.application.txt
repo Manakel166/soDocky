@@ -1,0 +1,58 @@
+*** Settings ***
+Library           Selenium2Library    30s
+
+*** Variables ***
+${url_OnlineBanking_Homepage}    http://127.0.0.1:1026/
+${url_test_grid}    http://127.0.0.1:4441/wd/hub
+
+*** Keywords ***
+Launch OnlineBanking on Browser:
+    [Arguments]    ${browser}
+    Open Browser    ${url_OnlineBanking_Homepage}    ${browser}    driver1    ${url_test_grid}
+
+On LoginPage, Enter Valid Credentials
+    [Arguments]    ${UserName}    ${Password}
+    Sleep    10s
+    Click Link    Authenticate
+    Location Should Contain    login
+    Input Text    UserName    ${UserName}
+    Input Password    password    ${Password}
+    Click Button    login
+    Element Should Not Be Visible    ErrorLogin
+    Location Should Be    http://127.0.0.1:1026/
+
+On Homepage, Choose to make a Deposit
+    Click Link    Make a Deposit
+    Location Should Contain    transfer
+
+On DepositPage, Check that Msg "Amount is too Much" is Displayed
+    Location Should Contain    transfer
+    Page Should Contain    ERROR:AMOUNT_TOO_BIG
+
+On DepositPage, Check that Msg "Payee is not registered!" is Displayed
+    Location Should Contain    transfer
+    Page Should Contain    ERROR:PAYEE_NOT_YET_REGISTERED
+
+On DepositPage, Enter the Transfer Amount
+    [Arguments]    ${arg1}
+    ${Transfer_Amount}=    Set Variable If    '${arg1}'== '[a_Valid_Transfer_Amount]'    100    1000
+    Input Text    Amount    ${Transfer_Amount}
+
+On DepositPage, Validate the Transfer request
+    Location Should Contain    transfer
+    Click Button    SubmitTransfer
+
+On DepositPage, Check that Transfer is completed
+    Location should contain    transfer
+    Page should contain    TRANSFERT VALIDATED
+
+On DepositPage, Check that Transfer is refused with Blocking Error Message
+    [Arguments]    ${arg1}
+    Run Keyword If    '${arg1}'=='[Error: Too_Big_Amount]'    On DepositPage, Check that Msg "Amount is too Much" is Displayed
+    Run Keyword If    '${arg1}'=='[Error: Not_Registered_Payee]'    On DepositPage, Check that Msg "Payee is not registered!" is Displayed
+
+On DepositPage, Enter the Payee Name
+    [Arguments]    ${arg1}
+    ${Payee_Name}=    Set Variable If    '${arg1}'== '[a_Registered_Payee_Name]'    Pierre(R)    Paul(N)
+    Location Should Contain    transfer
+    Select From List By Label    PayeesList    ${Payee_Name}

@@ -1,0 +1,27 @@
+Feature: Customer Transfers Fund 
+    As a customer, 
+    I want to transfer funds 
+    so that I can send money to my friends and family 
+  
+Scenario: Valid Payee 
+    Given the user is on Fund Transfer Page 
+    When he enters as payee name [a_Registered_Payee_Name]
+    And he enters as amount [a Valid Transfer Amount]
+    And he Submits request for Fund Transfer 
+    Then the fund transfert must be completed
+  
+Scenario: Invalid Payee 
+    Given the user is on Fund Transfer Page 
+    When he enters as payee name [a_Not_Registered_Payee_Name]
+    And he enters as amount [a Valid Transfer Amount]
+    And he Submits request for Fund Transfer 
+    Then a blocking error message must be displayed [Error: Not_Registered_Payee]
+  
+Scenario: Too big amount for current account balance
+    Given the user is on Fund Transfer Page 
+    When he enters as payee name [a_Registered_Payee_Name]
+    And he enters as amount [a_too_big_amount]
+    And he Submits request for Fund Transfer 
+    Then a blocking error message must be displayed [Error: Too_Big_Amount]
+
+

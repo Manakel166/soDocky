@@ -1,0 +1,45 @@
+*** Settings ***
+Library           RequestsLibrary
+Library           XML
+Library           Collections
+
+*** Keywords ***
+the user is on Fund Transfer Page
+    Create Session on Online Banking
+    Set Test Variable    ${payee_Name}    NOT_SET
+    Set Test Variable    ${Transfer_Amount}    0
+
+he enters as payee name
+    [Arguments]    ${arg1}
+    ${valued_payee_name}=    Set Variable If    '${arg1}'== '[a_Registered_Payee_Name]'    Pierre(R)    Paul(N)
+    Set Test Variable    ${payee_Name}    ${valued_payee_name}
+
+he enters as amount
+    [Arguments]    ${arg1}
+    ${valued_transfer_amount}=    Set Variable If    '${arg1}'== '[a_Valid_Transfer_Amount]'    100    1000
+    Set Test Variable    ${transfer_Amount}    ${valued_transfer_amount}
+
+he Submits request for Fund Transfer
+    ${header}=    Create Dictionary    Content-Type=application/json
+    ${json_payload}=    To Json    {"payee":"${payee_Name}","amount":"${Transfer_Amount}"}
+    Log    ${json_payload}
+    ${resp}=    Post Request    OnlineBanking    api/transfer    headers=${header}    data=${json_payload}
+    Set Test Variable    ${result}    ${resp}
+
+the fund transfert must be completed
+    Should Be Equal As Strings    ${result.status_code}    200
+    Dictionary Should Contain Key    ${result.json()}    status
+    ${status_msg}=    Get From Dictionary    ${result.json()}    status
+    Should be Equal as Strings    ${status_msg}    TRANSFER VALIDATED
+
+a blocking error message must be displayed
+    [Arguments]    ${arg1}
+    Run Keyword If    '${arg1}'=='[Error: Too_Big_Amount]'    Set Test Variable    ${expected_status}    AMOUNT_TOO_BIG
+    Run Keyword If    '${arg1}'=='[Error: Not_Registered_Payee]'    Set Test Variable    ${expected_status}    PAYEE_NOT_REGISTERED
+    Should Be Equal As Strings    ${result.status_code}    422
+    Dictionary Should Contain Key    ${result.json()}    status
+    ${status_msg}=    Get From Dictionary    ${result.json()}    status
+    Should be Equal as Strings    ${status_msg}    ${expected_status}
+
+Create Session on Online Banking
+    Create Session    OnlineBanking    http://127.0.0.1:1026

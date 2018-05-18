@@ -1,0 +1,47 @@
+*** Settings ***
+Library           Selenium2Library
+
+*** Keywords ***
+Launch Online Banking on Browser:
+    [Arguments]    ${Browser}= Chrome
+    Open Browser    ${url_OnlineBanking}    ${Browser}    driver1    ${url_selenium_grid}
+
+On DepositPage, Check Blocking Error Message:
+    [Arguments]    ${expected_message}
+    Location Should Contain    transfer
+    Page Should Contain    ${expected_message}
+    Capture Page Screenshot
+
+On DepositPage, Check that Transfer is completed
+    Location should contain    transfer
+    Page should contain    TRANSFERT VALIDE
+    Capture Page Screenshot
+
+On DepositPage, Enter the Payee Name:
+    [Arguments]    ${arg1}
+    ${Payee_Name}=    Set Variable If    '${arg1}'=='[a_Registered_Payee_Name]'    Pierre(R)    Paul(N)
+    Location Should Contain    transfer
+    Select From List By Label    PayeesList    ${Payee_Name}
+
+On DepositPage, Enter the Transfer Amount
+    [Arguments]    ${arg1}
+    ${Transfer_Amount}=    Set Variable If    '${arg1}'== '[a_Valid_Transfer_Amount]'    100    1000
+    Input Text    Amount    ${Transfer_Amount}
+
+On DepositPage, Validate the Transfer Request
+    Location Should Contain    transfer
+    Click Button    SubmitTransfer
+
+On HomePage, Choose to make a Deposit
+    Click Link    Make a Deposit
+    Location Should Contain    transfer
+    Page Should Not Contain    You are not logged in. Access denied.
+
+On Login Page, Enter Valid Credentials
+    [Arguments]    ${arg1}    ${arg2}
+    Click Link    Authenticate
+    Location Should Contain    login
+    Input Text    UserName    ${arg1}
+    Input Password    password    ${arg2}
+    Click Button    LoginButton
+    Element Should Not Be Visible    ErrorLogin    message= Login Failed

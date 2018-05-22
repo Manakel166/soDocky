@@ -14,7 +14,7 @@ echo "{
 	\"configuration\":
 	{
 		\"cleanUpCycle\":2000,
-		\"timeout\":30000,
+		\"timeout\":30,
 		\"maxSession\": 1,
 		\"proxy\":\"org.openqa.grid.selenium.proxy.DefaultRemoteProxy\",
 		\"register\": true,

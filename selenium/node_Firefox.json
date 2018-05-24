@@ -1,11 +1,11 @@
 {
   "capabilities": [
     {
-      "browserName": "chrome",
-      "maxInstances": 1,
+      "browserName": "firefox",
+      "marionette": true,
+      "maxInstances": 5,
       "seleniumProtocol": "WebDriver",
-      "version": "63",
-      "chrome_binary": "/usr/bin/chromium-browser"
+      "firefox_binary": "/usr/bin/firefox"
     }
   ],
   "proxy": "org.openqa.grid.selenium.proxy.DefaultRemoteProxy",

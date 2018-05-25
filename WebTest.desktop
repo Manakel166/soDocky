@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=WebTest
+Comment=
+Exec=/headless/Desktop/automation/Launchers/Launcher_Web.sh
+Icon=/headless/Desktop/export/sogetiWeb.jfif
+Path=
+Terminal=true
+StartupNotify=true

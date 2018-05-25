@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=AndroidTest
+Comment=
+Exec=/headless/Desktop/automation/Launchers/Launcher_Android.sh
+Icon=/headless/Desktop/export/sogetiAndroid.jfif
+Path=
+Terminal=true
+StartupNotify=true

@@ -6,6 +6,13 @@
       "seleniumProtocol": "WebDriver",
       "version": "63",
       "chrome_binary": "/usr/bin/chromium-browser"
+    },   
+    {
+      "browserName": "firefox",
+      "marionette": true,
+      "maxInstances": 5,
+      "seleniumProtocol": "WebDriver",
+      "firefox_binary": "/usr/bin/firefox"
     }
   ],
   "proxy": "org.openqa.grid.selenium.proxy.DefaultRemoteProxy",

@@ -1,0 +1,238 @@
+## Custom Dockerfile
+FROM consol/ubuntu-xfce-vnc:latest
+#LABEL maintainer="sogeti-testing"
+
+## switch to sudo
+USER 0
+
+## install prerequisites
+RUN apt-get update
+RUN apt-get -y upgrade
+
+RUN apt-get -y install python-pip
+
+## install geany
+RUN apt-get update
+RUN apt-get -y install geany
+## install robotframework
+RUN pip install robotframework
+
+
+## install robotframework-ride
+RUN apt-get -y install software-properties-common python-software-properties
+RUN add-apt-repository ppa:nilarimogard/webupd8
+RUN apt-get update
+RUN apt-get -y install python-wxgtk2.8
+RUN pip install --upgrade pip
+RUN pip install six
+RUN pip install robotframework-ride
+
+## install robotframework libraries
+RUN pip install -U robotframework-SeleniumLibrary
+RUN pip install -U robotframework-sudslibrary
+RUN pip install -U requests
+RUN pip install -U robotframework-requests
+RUN pip install -U robotframework-AppiumLibrary
+
+##install postgresql database access 
+RUN apt-get install -y postgresql postgresql-contrib libpq-dev python-dev
+RUN apt-get install -y postgresql-client 
+RUN apt-get install -y python-psycopg2
+RUN pip install psycopg2
+
+## install robotframework standard database library
+RUN pip install robotframework-DatabaseLibrary
+
+##install git in command line
+RUN add-apt-repository ppa:git-core/ppa
+RUN apt-get update
+RUN apt-get install -y git
+
+#grep github automation/
+RUN mkdir -p /headless/Desktop/automation/
+WORKDIR /headless/Desktop/automation/
+RUN git clone https://github.com/Manakel166/soDocky.git .
+
+##install android development kit
+
+WORKDIR /root
+RUN apt-get -qqy update && \
+    apt-get -qqy --no-install-recommends install \
+    openjdk-8-jdk \
+    ca-certificates \
+    tzdata \
+    zip \
+    unzip \
+    curl \
+    wget \
+    libqt5webkit5 \
+    libgconf-2-4 \
+    xvfb \
+  && rm -rf /var/lib/apt/lists/*
+
+##set the Java Home  
+ENV JAVA_HOME="/usr/lib/jvm/java-8-openjdk-amd64/jre" \
+    PATH=$PATH:$JAVA_HOME/bin
+#=====================
+# Install Android SDK
+#=====================
+ARG SDK_VERSION=sdk-tools-linux-3859397
+ARG ANDROID_BUILD_TOOLS_VERSION=27.0.0
+ARG ANDROID_PLATFORM_VERSION="android-27"
+
+ENV SDK_VERSION=$SDK_VERSION \
+    ANDROID_BUILD_TOOLS_VERSION=$ANDROID_BUILD_TOOLS_VERSION \
+    ANDROID_HOME=/root
+
+RUN wget -O tools.zip https://dl.google.com/android/repository/${SDK_VERSION}.zip && \
+    unzip tools.zip && rm tools.zip && \
+    chmod a+x -R $ANDROID_HOME && \
+    chown -R root:root $ANDROID_HOME
+
+ENV PATH=$PATH:$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin
+
+# https://askubuntu.com/questions/885658/android-sdk-repositories-cfg-could-not-be-loaded
+RUN mkdir -p ~/.android && \
+    touch ~/.android/repositories.cfg && \
+    echo y | sdkmanager "platform-tools" && \
+    echo y | sdkmanager "build-tools;$ANDROID_BUILD_TOOLS_VERSION" && \
+    echo y | sdkmanager "platforms;$ANDROID_PLATFORM_VERSION"
+
+ENV PATH=$PATH:$ANDROID_HOME/platform-tools:$ANDROID_HOME/build-tools
+
+#===============
+# Expose Ports
+#---------------
+# 4723
+#   Appium port
+#===============
+EXPOSE 4723
+
+
+#make adb available for all users
+RUN chmod 4550 $ANDROID_HOME/platform-tools/adb
+
+
+#install appium server
+#====================================
+# Install latest nodejs, npm, appium
+#====================================
+##install node /appium
+RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
+RUN apt-get install -y nodejs
+RUN apt-get install -y build-essential
+RUN npm i npm@latest -g
+RUN npm i -g appium@beta --unsafe-perm=true --allow-root
+RUN  npm cache verify && \
+    apt-get remove --purge -y npm && \
+    apt-get autoremove --purge -y && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
+    apt-get clean
+    
+
+## install appium gui as an app image
+RUN mkdir -p /headless/Desktop/automation/appium
+WORKDIR /headless/Desktop/automation/appium
+RUN wget https://github.com/appium/appium-desktop/releases/download/v1.6.1/appium-desktop-1.6.1-x86_64.AppImage
+RUN chmod 777 appium-desktop-1.6.1-x86_64.AppImage
+RUN apt-get update
+
+##java
+RUN apt-get install openjdk-8-jre openjdk-8-jdk
+## install eclipse RED
+RUN mkdir -p /headless/Desktop/automation/eclipse
+WORKDIR /headless/Desktop/automation/eclipse
+RUN wget https://github.com/nokia/RED/releases/download/0.8.4/RED_0.8.4.20180319092441-linux.gtk.x86_64.zip
+RUN unzip RED_0.8.4.20180319092441-linux.gtk.x86_64.zip
+## install selenium server
+RUN wget --no-verbose  https://selenium-release.storage.googleapis.com/3.12/selenium-server-standalone-3.12.0.jar \
+    -O /headless/Desktop/automation/selenium/selenium-server-standalone.jar
+
+##install Chrome and Chrome Driver
+ARG CHROME_VERSION="google-chrome-stable"
+RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
+  && echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list \
+  && apt-get update -qqy \
+  && apt-get -qqy install \
+    ${CHROME_VERSION:-google-chrome-stable} \
+  && rm /etc/apt/sources.list.d/google-chrome.list \
+  && rm -rf /var/lib/apt/lists/* /var/cache/apt/*
+
+ARG CHROME_DRIVER_VERSION="latest"
+RUN CD_VERSION=$(if [ ${CHROME_DRIVER_VERSION:-latest} = "latest" ]; then echo $(wget -qO- https://chromedriver.storage.googleapis.com/LATEST_RELEASE); else echo $CHROME_DRIVER_VERSION; fi) \
+  && echo "Using chromedriver version: "$CD_VERSION \
+  && wget --no-verbose -O /tmp/chromedriver_linux64.zip https://chromedriver.storage.googleapis.com/$CD_VERSION/chromedriver_linux64.zip \
+  && rm -rf /headless/Desktop/automation/selenium/chromedriver \
+  && unzip /tmp/chromedriver_linux64.zip -d /headless/Desktop/automation/selenium
+#  && rm /tmp/chromedriver_linux64.zip \
+#  && mv /headless/Desktop/automation/selenium/chromedriver /headless/Desktop/automation/selenium/chromedriver-$CD_VERSION \
+#  && chmod 755 /headless/Desktop/automation/selenium/chromedriver-$CD_VERSION \
+#  && ln -fs /headless/Desktop/automation/selenium/chromedriver-$CD_VERSION /usr/bin/chromedriver
+  
+#=========
+# Firefox
+#=========
+ARG FIREFOX_VERSION=latest
+RUN FIREFOX_DOWNLOAD_URL=$(if [ $FIREFOX_VERSION = "latest" ] || [ $FIREFOX_VERSION = "nightly-latest" ] || [ $FIREFOX_VERSION = "devedition-latest" ]; then echo "https://download.mozilla.org/?product=firefox-$FIREFOX_VERSION-ssl&os=linux64&lang=en-US"; else echo "https://download-installer.cdn.mozilla.net/pub/firefox/releases/$FIREFOX_VERSION/linux-x86_64/en-US/firefox-$FIREFOX_VERSION.tar.bz2"; fi) \
+  && apt-get update -qqy \
+  && apt-get -qqy --no-install-recommends install firefox \
+  && rm -rf /var/lib/apt/lists/* /var/cache/apt/* \
+  && wget --no-verbose -O /tmp/firefox.tar.bz2 $FIREFOX_DOWNLOAD_URL \
+  && apt-get -y purge firefox \
+  && rm -rf /opt/firefox \
+  && tar -C /opt -xjf /tmp/firefox.tar.bz2 \
+  && rm /tmp/firefox.tar.bz2 \
+  && mv /opt/firefox /opt/firefox-$FIREFOX_VERSION \
+  && ln -fs /opt/firefox-$FIREFOX_VERSION/firefox /usr/bin/firefox
+
+#============
+# GeckoDriver
+#============
+ARG GECKODRIVER_VERSION=latest
+RUN GK_VERSION=$(if [ ${GECKODRIVER_VERSION:-latest} = "latest" ]; then echo $(wget -qO- "https://api.github.com/repos/mozilla/geckodriver/releases/latest" | grep '"tag_name":' | sed -E 's/.*"v([0-9.]+)".*/\1/'); else echo $GECKODRIVER_VERSION; fi) \
+  && echo "Using GeckoDriver version: "$GK_VERSION \
+  && wget --no-verbose -O /tmp/geckodriver.tar.gz https://github.com/mozilla/geckodriver/releases/download/v$GK_VERSION/geckodriver-v$GK_VERSION-linux64.tar.gz \
+  && rm -rf /opt/geckodriver \
+  && tar -C /opt -zxf /tmp/geckodriver.tar.gz \
+  && rm /tmp/geckodriver.tar.gz \
+  && chmod 755 /opt/geckodriver \
+  && mv /opt/geckodriver /headless/Desktop/automation/selenium/geckodriver \
+  && ln -fs /headless/Desktop/automation/selenium/geckodriver /usr/bin/geckodriver
+
+
+#====================================================
+# scripts to run appium and connect to Selenium Grid
+#====================================================
+RUN mv /headless/Desktop/automation/Appium/entry_point.sh /root/
+RUN mv /headless/Desktop/automation/Appium/generate_config.sh /root/
+RUN mv /headless/Desktop/automation/Appium/wireless_connect.sh /root/
+RUN mv /headless/Desktop/automation/Appium/wireless_autoconnect.sh /root/
+
+RUN rmdir /headless/Desktop/automation/Appium
+#COPY \
+#    /Appium/entry_point.sh \
+#    /Appium/generate_config.sh \
+#    /Appium/wireless_connect.sh \
+#    /Appium/wireless_autoconnect.sh \
+#    /root/
+#RUN chmod +x /root/entry_point.sh && \
+#    chmod +x /root/generate_config.sh && \
+#    chmod +x /root/wireless_connect.sh && \
+#    chmod +x /root/wireless_autoconnect.sh
+
+##config wallpaper
+RUN cd /headless/.config/xfce4/xfconf/xfce-perchannel-xml && \
+    rm xfce4-desktop.xml
+
+RUN cd /headless/Desktop/automation/wallpaper && \ 
+	mv xfce4-desktop.xml /headless/.config/xfce4/xfconf/xfce-perchannel-xml  && \
+	mv wallpaper.png /headless/.config/
+
+RUN rmdir /headless/Desktop/automation/wallpaper
+
+#suppression du dockerFile et .yml
+RUN rm -rf /headless/Desktop/automation/Docker
+
+## gives all required rights and switch back to default user
+RUN chmod -R a+rwx /headless/Desktop/automation
+##USER PRE 1984

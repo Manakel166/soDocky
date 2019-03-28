@@ -6,16 +6,16 @@ version: '2'
 services:
   # soTesty Development Docker
   soride:
-    image: sodocky-master5
+    image: sodocky-master
     privileged: true
     volumes:
       - /dev/bus/usb:/dev/bus/usb
-      - ../../../../Users/login/40_MY_WORK:/headless/Desktop/40_MY_WORK
+      - ../../40_MY_WORK:/headless/Desktop/40_MY_WORK
       - /dev/shm:/dev/shm
     environment:
       - CONNECT_TO_GRID=True
     ports:
       - 4723:4723
       - 5901:5901
-      - 6901:6901
+      - 6902:6901
       - 4444:4444

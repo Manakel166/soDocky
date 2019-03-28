@@ -1,0 +1,11 @@
+#!/usr/bin/env xdg-open
+[Desktop Entry]
+Exec=/usr/bin/python -m robotide.__init__
+Comment=A Robot Framework IDE
+GenericName=RIDE
+Icon=/usr/local/lib/python2.7/dist-packages/robotide/widgets/robot.png
+Name=RIDE
+StartupNotify=true
+Terminal=false
+Type=Application
+X-KDE-SubstituteUID=false
